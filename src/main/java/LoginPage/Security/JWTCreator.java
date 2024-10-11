@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,8 @@ public class JWTCreator {
                 setExpiration(jwtObject.getExpiration())
                 .claim(ROLES_AUTHORITIES,checkRoles(jwtObject.getRoles()))
                 .signWith(SignatureAlgorithm.HS512, key).compact();
+
+
 
         return prefix + " " + token;
     }

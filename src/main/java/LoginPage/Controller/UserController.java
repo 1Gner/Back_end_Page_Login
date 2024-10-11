@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -78,7 +79,10 @@ public class UserController {
 
             sessao.setToken(JWTCreator.createToken(securityConfig.PREFIX,securityConfig.KEY,jwtObject));
 
-            Cookie jwtCookie = new Cookie("jwtToken", sessao.getToken());
+
+            String encodedToken  = Base64.getUrlEncoder().encodeToString(sessao.getToken().getBytes());
+
+            Cookie jwtCookie = new Cookie("jwtToken", encodedToken);
             jwtCookie.setHttpOnly(true);
             jwtCookie.setSecure(true);
             jwtCookie.setPath("/");

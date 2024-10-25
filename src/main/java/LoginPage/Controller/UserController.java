@@ -12,13 +12,12 @@ import LoginPage.Service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @RequestMapping(value = "/user")
@@ -38,33 +37,32 @@ public class UserController {
     private SecurityConfigJwt securityConfig;
 
 
-
     @PostMapping(value = "/save")
-    public ResponseEntity<User> salvaUser(@RequestBody User user){
+    public ResponseEntity<User> salvaUser(@RequestBody User user) {
         user = service.salvarUser(user);
         return ResponseEntity.ok().body(user);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<User> procuraUser(@PathVariable Integer id){
+    public ResponseEntity<User> procuraUser(@PathVariable Integer id) {
         User user = service.findById(id);
         user = service.dencryptUser(user);
         return ResponseEntity.ok().body(user);
     }
 
     @GetMapping(value = "/all")
-    public ResponseEntity<List<User>> procuraTodos(){
+    public ResponseEntity<List<User>> procuraTodos() {
         List<User> user = service.findAll();
         user.forEach(use -> use = service.dencryptUser(use));
         return ResponseEntity.ok().body(user);
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<?> Login (@RequestBody Login login, HttpServletResponse response){
+    public ResponseEntity<?> Login(@RequestBody Login login, HttpServletResponse response) {
 
         User user = repository.findByUsername(login.getUsername());
-        if(user!=null) {
-            boolean passwordOk =  encoder.matches(login.getPassword(), user.getPassword());
+        if (user != null) {
+            boolean passwordOk = encoder.matches(login.getPassword(), user.getPassword());
             if (!passwordOk) {
                 throw new RuntimeException("Senha inválida para o login: " + login.getUsername());
             }
@@ -77,23 +75,34 @@ public class UserController {
             jwtObject.setExpiration((new Date(System.currentTimeMillis() + securityConfig.EXPIRATION)));
             jwtObject.setRoles(user.getRoles());
 
-            sessao.setToken(JWTCreator.createToken(securityConfig.PREFIX,securityConfig.KEY,jwtObject));
+            sessao.setToken(JWTCreator.createToken(securityConfig.PREFIX, securityConfig.KEY, jwtObject));
 
 
-            String encodedToken  = Base64.getUrlEncoder().encodeToString(sessao.getToken().getBytes());
-
+            String encodedToken = Base64.getUrlEncoder().encodeToString(sessao.getToken().getBytes());
             Cookie jwtCookie = new Cookie("jwtToken", encodedToken);
+
             jwtCookie.setHttpOnly(true);
             jwtCookie.setSecure(true);
             jwtCookie.setPath("/");
             jwtCookie.setMaxAge(5 * 60 * 60);
 
             response.addCookie(jwtCookie);
+            Map<String, Boolean> auth = new HashMap<>();
+            auth.put("authenticated", true);
 
-            return ResponseEntity.ok().body(sessao);
-        }else {
+
+            return ResponseEntity.ok().body(auth);
+        } else {
             throw new RuntimeException("Erro ao tentar fazer login");
         }
+    }
+
+
+    @GetMapping(value = "/verify")
+    public ResponseEntity<Void> verify() {
+        return ResponseEntity.ok().build();
+
+
     }
 }
 

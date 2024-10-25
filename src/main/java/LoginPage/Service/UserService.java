@@ -36,6 +36,14 @@ public class UserService {
         return repository.findById(id).orElse(null);
 
     }
+
+    public User findUsername(String Username) {
+
+        List<User> users = findAll();
+        Optional<User> userR = users.stream().filter(user -> user.getUsername().equals(Username)).findFirst();
+        return userR.orElse(null);
+    }
+
     public User dencryptUser(User user){
         user.setNome(AesEncoder.decrypt(user.getNome()));
         user.setEmail(AesEncoder.decrypt(user.getEmail()));

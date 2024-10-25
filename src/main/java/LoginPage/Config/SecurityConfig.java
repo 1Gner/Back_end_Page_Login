@@ -9,6 +9,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,10 +35,15 @@ public class SecurityConfig  {
         http.csrf(csrf -> csrf.disable())
                 .addFilterAfter(new JWTFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/user").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/save").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/user/verify").hasAnyRole("USER","ADMIN")
+                        .requestMatchers( "/produto/**").permitAll()
+                        .requestMatchers( "/order/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/produto/save").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/produto/saveFront").hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/produto/findall").permitAll()
                         .requestMatchers(HttpMethod.GET,"/user/all").hasAnyRole("USER","ADMIN")
                         .requestMatchers(HttpMethod.GET,"/user/{id}").hasAnyRole("USER","ADMIN")
                         .requestMatchers(HttpMethod.POST, "/user/login").permitAll()
@@ -53,8 +59,8 @@ public class SecurityConfig  {
                     config.setAllowCredentials(true); // Permite cookies, etc
                     return config;
                 }))
-                .httpBasic(Customizer.withDefaults());
-
+                //.httpBasic(Customizer.withDefaults());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 

@@ -1,4 +1,4 @@
-package LoginPage.Config;
+/*package LoginPage.Config;
 
 
 import org.springframework.context.annotation.Configuration;
@@ -17,3 +17,4 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 }
+*/

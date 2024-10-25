@@ -29,10 +29,10 @@ public class JWTFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String token = null;
 
-
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("jwtToken".equals(cookie.getName())) {
+
                     token = new String(Base64.getUrlDecoder().decode(cookie.getValue()));
                     break;
                 }
@@ -41,6 +41,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         try {
             if(token!=null && !token.isEmpty()) {
+
                 JWTObject tokenObject = JWTCreator.ExtractInfoToken(token, SecurityConfigJwt.PREFIX, SecurityConfigJwt.KEY);
 
                 List<SimpleGrantedAuthority> authorities = authorities(tokenObject.getRoles());
@@ -59,6 +60,19 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException e) {
             e.printStackTrace();
+
+
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwtToken".equals(cookie.getName())) {
+                        cookie.setValue(null);
+                        cookie.setMaxAge(0);
+                        cookie.setPath("/");
+                        response.addCookie(cookie);
+                        break;
+                    }
+                }
+            }
             response.setStatus(HttpStatus.FORBIDDEN.value());
 
             return;

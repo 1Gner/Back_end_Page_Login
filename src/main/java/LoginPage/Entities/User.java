@@ -25,6 +25,12 @@ public class User {
     @Column(length = 500)
     private String Email;
 
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
+
+
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "tab_user_role",joinColumns = @JoinColumn(name = "user_id"))
     @Column(name="role_id",length = 20 )
@@ -43,6 +49,13 @@ public class User {
 
 
 
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
 
     public List<String> getRoles() {
         return roles;
